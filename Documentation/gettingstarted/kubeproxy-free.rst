@@ -315,8 +315,8 @@ be lost on its path to the service endpoint.
   or :ref:`Hybrid<Hybrid Mode>` mode if only TCP-based services are exposed to the outside
   world for the latter.
 
-Maglev Consistent Hashing (Beta)
-********************************
+Maglev Consistent Hashing
+*************************
 
 Cilium's eBPF kube-proxy replacement supports consistent hashing by implementing a variant
 of `The Maglev paper <https://storage.googleapis.com/pub-tools-public-publication-data/pdf/44824.pdf>`_
