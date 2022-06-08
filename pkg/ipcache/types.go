@@ -4,8 +4,12 @@
 package ipcache
 
 import (
+	"net/netip"
+
+	"github.com/cilium/cilium/pkg/ip"
 	"github.com/cilium/cilium/pkg/ipcache/types"
 	"github.com/cilium/cilium/pkg/labels"
+	"github.com/cilium/cilium/pkg/labels/cidr"
 	"github.com/cilium/cilium/pkg/source"
 )
 
@@ -43,6 +47,9 @@ func (m *resourceInfo) merge(info IPMetadata, src source.Source) {
 		l := labels.NewLabelsFromModel(nil)
 		l.MergeLabels(info.(labels.Labels))
 		m.labels = l
+	case cidrMetadata:
+		c := info.(cidrMetadata)
+		m.labels = cidr.GetCIDRLabels(ip.PrefixToIPNet(c.prefix))
 	default:
 		log.Errorf("BUG: Invalid IPMetadata passed to ipinfo.merge(): %+v", info)
 	}
@@ -53,6 +60,8 @@ func (m *resourceInfo) merge(info IPMetadata, src source.Source) {
 func (m *resourceInfo) unmerge(info IPMetadata) {
 	switch info.(type) {
 	case labels.Labels:
+		m.labels = nil
+	case cidrMetadata:
 		m.labels = nil
 	default:
 		log.Errorf("BUG: Invalid IPMetadata passed to ipinfo.unmerge(): %+v", info)
@@ -91,4 +100,11 @@ func (s prefixInfo) Source() source.Source {
 		}
 	}
 	return src
+}
+
+// cidrMetadata is a type of IPMetadata which represents a CIDR prefix that's
+// injected into the IPCache in lieu of the fully expanded CIDR labels. The
+// CIDR labels associated with the prefix will be expanded upon merge().
+type cidrMetadata struct {
+	prefix netip.Prefix
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/cilium/cilium/pkg/controller"
 	"github.com/cilium/cilium/pkg/identity"
 	"github.com/cilium/cilium/pkg/identity/cache"
+	"github.com/cilium/cilium/pkg/ip"
 	"github.com/cilium/cilium/pkg/ipcache/types"
 	ipcacheTypes "github.com/cilium/cilium/pkg/ipcache/types"
 	"github.com/cilium/cilium/pkg/labels"
@@ -449,6 +450,28 @@ func (ipc *IPCache) RemoveMetadata(prefix netip.Prefix, resource ipcacheTypes.Re
 	ipc.metadata.remove(prefix, resource, aux...)
 	ipc.metadata.Unlock()
 	ipc.metadata.enqueuePrefixUpdates(prefix)
+	ipc.TriggerLabelInjection()
+}
+
+func (ipc *IPCache) UpsertPrefixes(prefixes []*net.IPNet, src source.Source, resource types.ResourceID) {
+	ipc.metadata.Lock()
+	for _, p := range prefixes {
+		prefix := ip.IPNetToPrefix(p)
+		ipc.metadata.upsert(prefix, src, resource, cidrMetadata{prefix: prefix})
+		ipc.metadata.enqueuePrefixUpdates(prefix)
+	}
+	ipc.metadata.Unlock()
+	ipc.TriggerLabelInjection()
+}
+
+func (ipc *IPCache) RemovePrefixes(prefixes []*net.IPNet, src source.Source, resource types.ResourceID) {
+	ipc.metadata.Lock()
+	for _, p := range prefixes {
+		prefix := ip.IPNetToPrefix(p)
+		ipc.metadata.remove(prefix, resource, cidrMetadata{prefix: prefix})
+		ipc.metadata.enqueuePrefixUpdates(prefix)
+	}
+	ipc.metadata.Unlock()
 	ipc.TriggerLabelInjection()
 }
 

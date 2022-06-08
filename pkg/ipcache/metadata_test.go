@@ -36,15 +36,15 @@ func TestInjectLabels(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, IPIdentityCache.ipToIdentityCache, 1)
 
-	// Insert kube-apiserver IP from outside of the cluster. This should create
-	// a CIDR ID for this IP.
+	// Insert kube-apiserver IP from inside of the cluster. This should create
+	// a CIDR ID temporarily for this IP.
 	IPIdentityCache.metadata.upsert(inClusterPrefix, source.KubeAPIServer, "kube-uid", labels.LabelKubeAPIServer)
 	assert.Len(t, IPIdentityCache.metadata.m, 2)
 	remaining, err = IPIdentityCache.InjectLabels(ctx, []netip.Prefix{inClusterPrefix})
 	assert.NoError(t, err)
 	assert.Len(t, remaining, 0)
 	assert.Len(t, IPIdentityCache.ipToIdentityCache, 2)
-	assert.True(t, IPIdentityCache.ipToIdentityCache["10.0.0.4/32"].ID.HasLocalScope())
+	assert.True(t, IPIdentityCache.ipToIdentityCache[inClusterPrefix.String()].ID.HasLocalScope())
 
 	// Upsert node labels to the kube-apiserver to validate that the CIDR ID is
 	// deallocated and the kube-apiserver reserved ID is associated with this
@@ -55,7 +55,7 @@ func TestInjectLabels(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, remaining, 0)
 	assert.Len(t, IPIdentityCache.ipToIdentityCache, 2)
-	assert.False(t, IPIdentityCache.ipToIdentityCache["10.0.0.4/32"].ID.HasLocalScope())
+	assert.False(t, IPIdentityCache.ipToIdentityCache[inClusterPrefix.String()].ID.HasLocalScope())
 }
 
 func TestFilterMetadataByLabels(t *testing.T) {
