@@ -5,6 +5,7 @@ package ip
 
 import (
 	"net"
+	"net/netip"
 )
 
 // ParseCIDRs fetches all CIDRs referred to by the specified slice and returns
@@ -29,4 +30,39 @@ func ParseCIDRs(cidrs []string) (valid []*net.IPNet, invalid []string) {
 		}
 	}
 	return valid, invalid
+}
+
+// PrefixToIPNet is a convenience helper for migrating from the older 'net'
+// standard library types to the newer 'netip' types. Use this to plug the
+// new types in newer code into older types in older code during the migration.
+func PrefixToIPNet(prefix netip.Prefix) *net.IPNet {
+	return &net.IPNet{
+		IP:   prefix.Addr().AsSlice(),
+		Mask: net.CIDRMask(prefix.Bits(), prefix.Addr().BitLen()),
+	}
+}
+
+// IPNetToPrefix is a convenience helper for migrating from the older 'net'
+// standard library types to the newer 'netip' types. Use this to plug the
+// new types in newer code into older types in older code during the migration.
+func IPNetToPrefix(prefix *net.IPNet) netip.Prefix {
+	if prefix == nil {
+		return netip.Prefix{}
+	}
+	ip, _ := netip.AddrFromSlice(prefix.IP)
+	ones, _ := prefix.Mask.Size()
+	return netip.PrefixFrom(ip, ones)
+}
+
+// IPToNetPrefix is a convenience helper for migrating from the older 'net'
+// standard library types to the newer 'netip' types. Use this to plug the new
+// types in newer code into older types in older code during the migration.
+//
+// Note: This function assumes that the result of net.IP.To4() or net.IP.To16()
+// are passed in. This is because the net package always creates net.IP with a
+// length of 16 (IPv6) which causes this function to return an IPv6
+// netip.Prefix.
+func IPToNetPrefix(ip net.IP) netip.Prefix {
+	a, _ := netip.AddrFromSlice(ip)
+	return netip.PrefixFrom(a, a.BitLen())
 }
