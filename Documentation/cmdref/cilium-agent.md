@@ -96,7 +96,6 @@ cilium-agent [flags]
       --enable-host-firewall                                    Enable host network policies
       --enable-host-legacy-routing                              Enable the legacy host forwarding model which does not bypass upper stack in host namespace
       --enable-host-port                                        Enable k8s hostPort mapping feature (requires enabling enable-node-port) (default true)
-      --enable-host-reachable-services                          Enable reachability of services for host applications
       --enable-hubble                                           Enable hubble server
       --enable-hubble-recorder-api                              Enable the Hubble recorder API (default true)
       --enable-identity-mark                                    Enable setting identity mark for local traffic (default true)
@@ -125,6 +124,7 @@ cilium-agent [flags]
       --enable-runtime-device-detection                         Enable runtime device detection and datapath reconfiguration (experimental)
       --enable-service-topology                                 Enable support for service topology aware hints
       --enable-session-affinity                                 Enable support for service session affinity
+      --enable-socket-lb                                        Enable socket-based LB for E/W traffic
       --enable-svc-source-range-check                           Enable check of service source ranges (currently, only for LoadBalancer) (default true)
       --enable-tracing                                          Enable tracing while determining policy (debugging)
       --enable-unreachable-routes                               Add unreachable routes on pod deletion
