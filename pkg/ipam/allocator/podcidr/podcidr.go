@@ -25,6 +25,7 @@ import (
 	"github.com/cilium/cilium/pkg/option"
 	"github.com/cilium/cilium/pkg/revert"
 	"github.com/cilium/cilium/pkg/trigger"
+	"k8s.io/client-go/tools/cache"
 )
 
 type allocatorType string
@@ -938,3 +939,6 @@ func allocateFirstFreeCIDR(cidrAllocators []CIDRAllocator) (revertFunc revert.Re
 	})
 	return revertStack.Revert, cidr, err
 }
+
+// SyncNodes do nothing
+func (n *NodesPodCIDRManager) SyncNodes(cache.Store) {}
